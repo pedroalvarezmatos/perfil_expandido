@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="favicon.png" type="image/png">
     <title>PEDRO MATOS</title>
+    <link rel="icon" href="favicon.png" type="image/png">
     <style>
         * {
             margin: 0;
@@ -23,6 +23,11 @@
             height: 100vh;
             overflow: hidden;
         }
+        .video-container div {
+            height: 100%;
+            width: 100%;
+            padding: 0 !important;
+        }
         .video-container iframe {
             position: absolute;
             top: 0;
@@ -34,8 +39,58 @@
 </head>
 <body>
     <div class="video-container">
-        <iframe src="https://player.vimeo.com/video/1074027475?h=6b7080c701&autoplay=1&loop=1&background=1&muted=0" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media" allowfullscreen></iframe>
+        <div style="position:relative;">
+            <iframe src="https://player.vimeo.com/video/1074027475?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&loop=1&background=1&muted=0" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="Final" allowfullscreen></iframe>
+        </div>
     </div>
     <script src="https://player.vimeo.com/api/player.js"></script>
+     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var iframe = document.querySelector('iframe');
+            var player = new Vimeo.Player(iframe);
+            
+            // Force autoplay and looping when the page loads
+            player.ready().then(function() {
+                player.setLoop(true);
+                player.play().catch(function(error) {
+                    console.log('Play error:', error);
+                });
+            });
+            
+            // Monitor the video state
+            setInterval(function() {
+                player.getPaused().then(function(paused) {
+                    if (paused) {
+                        player.play().catch(function(error) {
+                            console.log('Play error:', error);
+                        });
+                    }
+                }).catch(function(error) {
+                    console.error("Error checking video state:", error);
+                });
+                
+                // Also check the current time to see if the video is stuck
+                let lastTime = 0;
+                player.getCurrentTime().then(function(seconds) {
+                    if (lastTime === seconds && seconds > 0) {
+                        // Video might be stuck, try to restart it
+                        player.play().catch(function(error) {
+                            console.log('Play error:', error);
+                        });
+                    }
+                    lastTime = seconds;
+                }).catch(function(error) {
+                    console.error("Error getting current time:", error);
+                });
+            }, 5000);
+            
+            // Handle the video ending
+            player.on('ended', function() {
+                player.play().catch(function(error) {
+                    console.log('Play error on ended:', error);
+                });
+            });
+        });
+    </script>
 </body>
 </html>
